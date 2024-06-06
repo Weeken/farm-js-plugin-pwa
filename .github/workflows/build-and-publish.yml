@@ -1,9 +1,9 @@
 name: farm-js-plugin-pwa
 on:
-  # push:
-  #   branches: [ main ] # 只有master分支发生push/pull_request事件时，才会触发 workflow
-  pull_request:
-    branches: [main]
+  push:
+    branches: [main] # 只有master分支发生push/pull_request事件时，才会触发 workflow
+  # pull_request:
+  #   branches: [main]
 jobs:
   build:
     runs-on: macOS-latest # 指定虚拟机环境
