@@ -46,23 +46,6 @@ export default function farmPlugin(options: Options): JsPlugin {
       // get resolved config
       farmConfig = resolvedConfig;
     },
-    load: {
-      filters: {
-        resolvedPaths: [`${resolveOptions.swName}.js`],
-      },
-      executor(param) {
-        if (param.resolvedPath === `${resolveOptions.swName}.js`) {
-          return {
-            content: sw_template(
-              JSON.stringify(resolveOptions.cacheName),
-              JSON.stringify(resolveOptions.staticFiles),
-              resolveOptions.patten
-            ),
-            moduleType: "js",
-          };
-        }
-      },
-    },
     finalizeResources: {
       executor({ config, resourcesMap }) {
         const publicPath = config.output.publicPath;
@@ -96,14 +79,13 @@ export default function farmPlugin(options: Options): JsPlugin {
       },
     },
     transformHtml: {
-      order: 2,
+      order: 0,
       async executor({ htmlResource }) {
         const htmlCode = Buffer.from(htmlResource.bytes).toString();
         const scope = resolveOptions.scope;
         const swName = resolveOptions.swName;
         const publicPath = farmConfig.compilation.output.publicPath;
-        const newHtmlCode = `
-        ${htmlCode}
+        const replaceHtml = `
         <script>
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
@@ -119,7 +101,8 @@ export default function farmPlugin(options: Options): JsPlugin {
                 });
             });
           }
-        </script>`;
+        </script></body>`;
+        const newHtmlCode = htmlCode.replace("</body>", replaceHtml);
         htmlResource.bytes = [...Buffer.from(newHtmlCode)];
         return htmlResource;
       },

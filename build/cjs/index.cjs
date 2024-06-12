@@ -635,24 +635,9 @@ globalThis.nodeRequire = require;(globalThis || window || global)['64508a57ad745
         };
         return {
             name: "farm-js-plugin-pwa",
-            priority: -9999,
+            priority: -9990,
             configResolved (resolvedConfig) {
                 farmConfig = resolvedConfig;
-            },
-            load: {
-                filters: {
-                    resolvedPaths: [
-                        `${resolveOptions.swName}.js`
-                    ]
-                },
-                executor (param) {
-                    if (param.resolvedPath === `${resolveOptions.swName}.js`) {
-                        return {
-                            content: (0, _sw.sw_template)(JSON.stringify(resolveOptions.cacheName), JSON.stringify(resolveOptions.staticFiles), resolveOptions.patten),
-                            moduleType: "js"
-                        };
-                    }
-                }
             },
             finalizeResources: {
                 executor ({ config, resourcesMap }) {
@@ -678,14 +663,13 @@ globalThis.nodeRequire = require;(globalThis || window || global)['64508a57ad745
                 }
             },
             transformHtml: {
-                order: 2,
+                order: 0,
                 async executor ({ htmlResource }) {
                     const htmlCode = Buffer.from(htmlResource.bytes).toString();
                     const scope = resolveOptions.scope;
                     const swName = resolveOptions.swName;
                     const publicPath = farmConfig.compilation.output.publicPath;
-                    const newHtmlCode = `
-        ${htmlCode}
+                    const replaceHtml = `
         <script>
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
@@ -699,7 +683,8 @@ globalThis.nodeRequire = require;(globalThis || window || global)['64508a57ad745
                 });
             });
           }
-        </script>`;
+        </script></body>`;
+                    const newHtmlCode = htmlCode.replace("</body>", replaceHtml);
                     htmlResource.bytes = [
                         ...Buffer.from(newHtmlCode)
                     ];
@@ -722,17 +707,14 @@ globalThis.nodeRequire = require;(globalThis || window || global)['64508a57ad745
         }
     });
     const sw_template = (filesCacheName, staticFiles, patten)=>`
-
 self.addEventListener('install', function (e) {
   self.skipWaiting()
   e.waitUntil(
     caches.open(${filesCacheName}).then((cache) => {
-      console.debug('[FARM_SW] 缓存所有文件:' + JSON.stringify(${staticFiles}))
       return cache.addAll(${staticFiles})
     })
   )
 })
-
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     self.clients.claim().then(() => {
@@ -750,25 +732,20 @@ self.addEventListener('activate', function (event) {
     })
   )
 })
-
 self.addEventListener('fetch', function (e) {
   e.respondWith(proxyRequest(e.request))
 })
-
 const isCacheSource = (url) => {
   return ${patten}.test(url) && url.startsWith('https')
 }
-
 const proxyRequest = async (request) => {
   if (isCacheSource(request.url)) {
     return caches.match(request).then(function (response) {
       if (response) {
-        console.debug('[FARM_SW] 命中资源:' + request.url)
         return response
       } else {
         return fetch(request).then((response) => {
           return caches.open(${filesCacheName}).then((cache) => {
-            console.debug('[FARM_SW] 缓存新资源:' + request.url)
             cache.put(request, response.clone())
             return response
           })
