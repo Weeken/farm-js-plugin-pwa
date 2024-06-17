@@ -5,6 +5,7 @@ import './index.css'
 
 
 const container = document.querySelector('#root');
+
 const root = createRoot(container);
 
 root.render(<Main />);

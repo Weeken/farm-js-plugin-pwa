@@ -1,7 +1,7 @@
 {
   "name": "farm-js-plugin-pwa",
-  "version": "0.0.2",
-  "description": "",
+  "version": "0.0.3",
+  "description": "A pwa js plugin for farm",
   "main": "./build/cjs/index.cjs",
   "types": "./build/esm/index.d.ts",
   "type": "module",
@@ -20,7 +20,7 @@
     "dev": "farm watch",
     "prepublishOnly": "npm run build"
   },
-  "author": "weeken",
+  "author": "Weeken",
   "license": "MIT",
   "devDependencies": {
     "@farmfe/cli": "^1.0.1",
