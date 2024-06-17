@@ -14,6 +14,9 @@ self.addEventListener('install', function (e) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     self.clients.claim().then(() => {
+      self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => client.navigate(client.url));
+      })
       return caches.keys().then(function (cacheNames) {
         return Promise.all(
           cacheNames
